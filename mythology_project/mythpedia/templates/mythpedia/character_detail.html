@@ -1,0 +1,83 @@
+{% extends "mythpedia/base.html" %}
+{% load static %} {# Si vous utilisez des fichiers statiques locaux #}
+
+{% block title_tag_content %}{{ character.name }} - {{ character.mythology.title }} - MythPedia{% endblock %}
+
+{% block main_page_heading %}{{ character.name }}{% endblock %}
+
+{% block content %}
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="mb-6 pb-6 border-b border-gray-200">
+            {% if character.role %}
+                <p class="text-xl text-blue-600 font-semibold -mt-2 mb-2">{{ character.role }}</p>
+            {% endif %}
+            <p class="text-sm text-gray-500">
+                Mythologie : 
+                <a href="{% url 'mythology_detail' mythology_slug=character.mythology.slug %}" class="text-blue-500 hover:underline">
+                    {{ character.mythology.title }}
+                </a>
+            </p>
+        </div>
+
+        {# SECTION POUR LES BOUTONS FAVORIS DE PERSONNAGE #}
+        <div class="my-6 text-center sm:text-left">
+            {% if user.is_authenticated %}
+                {% if is_favorite_character %}
+                    <form action="{% url 'remove_character_from_favorites' mythology_slug=character.mythology.slug character_slug=character.slug %}" method="post" style="display: inline-block;">
+                        {% csrf_token %}
+                        <button type="submit" class="px-5 py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium shadow-md">
+                            <i class="fas fa-user-minus mr-2"></i> Retirer des Favoris
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="{% url 'add_character_to_favorites' mythology_slug=character.mythology.slug character_slug=character.slug %}" method="post" style="display: inline-block;">
+                        {% csrf_token %}
+                        <button type="submit" class="px-5 py-2.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium shadow-md">
+                            <i class="fas fa-user-plus mr-2"></i> Ajouter aux Favoris
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p class="text-gray-600">
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="text-blue-600 hover:underline font-medium">Connectez-vous</a> pour ajouter ce personnage à vos favoris.
+                </p>
+            {% endif %}
+        </div>
+        {# FIN SECTION FAVORIS #}
+
+        {# LE BLOC D'AFFICHAGE DES MESSAGES A ÉTÉ SUPPRIMÉ D'ICI #}
+        {# Il sera géré par base.html #}
+
+        {% if character.image_url %}
+            <div class="mb-6 float-right ml-6 w-full sm:w-1/3 max-w-xs clear-none sm:clear-none">
+                <img src="{{ character.image_url }}" alt="{{ character.name }}" class="rounded-lg shadow-md object-cover w-full">
+            </div>
+        {% endif %}
+        
+        <div class="prose max-w-none text-gray-700 leading-relaxed">
+            {{ character.description|linebreaksbr }}
+        </div>
+        
+        <div style="clear: both;"></div> {# Pour nettoyer le float de l'image #}
+
+        {% comment %}
+        Section pour les histoires où le personnage apparaît
+        {% endcomment %}
+        {% if stories_featuring_character %} 
+            <h3 class="text-xl font-semibold text-blue-700 mt-8 mb-3 pt-6 border-t border-gray-200">Apparaît dans :</h3>
+            <ul class="list-disc list-inside text-gray-600 space-y-1">
+                {% for story in stories_featuring_character %} 
+                    <li>
+                        {{ story.title }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="mt-10 text-center">
+        <a href="{% url 'mythology_detail' mythology_slug=character.mythology.slug %}" class="text-blue-600 hover:underline font-medium">
+            ← Retour à la mythologie {{ character.mythology.title }}
+        </a>
+    </div>
+{% endblock %}

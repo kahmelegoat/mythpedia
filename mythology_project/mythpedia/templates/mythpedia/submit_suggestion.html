@@ -1,0 +1,82 @@
+{% extends "mythpedia/base.html" %}
+{% load static %}
+
+{% block title_tag_content %}Suggérer du Contenu - MythPedia{% endblock %}
+{% block main_page_heading %}Partagez vos Idées et Suggestions{% endblock %}
+
+{% block content %}
+    <div class="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-md"> 
+        <p class="text-gray-600 mb-6 text-center md:text-left">
+            Aidez-nous à enrichir MythPedia ! Si vous avez une idée pour une nouvelle mythologie, un personnage,
+            une histoire, ou si vous avez repéré une information à corriger ou à compléter, veuillez nous en faire part.
+        </p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="mb-5 field-{{ field.name }}">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    
+                    {# CORRECTION : Suppression du filtre |attr. Le style viendra des widgets du formulaire. #}
+                    {# Si vous n'avez pas stylisé les widgets dans forms.py, ce sera le rendu par défaut. #}
+                    {{ field }} 
+
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                        <div class="mt-1 text-xs text-red-600">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="mt-8">
+                <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Envoyer ma Suggestion
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Votre script JS pour afficher/masquer les champs conditionnels reste le même
+        document.addEventListener('DOMContentLoaded', function() {
+            const submissionTypeField = document.getElementById('{{ form.submission_type.id_for_label }}'); // Ou le sélecteur exact: document.querySelector('[name="{{ form.submission_type.name }}"]')
+            const relatedMythologyField = document.querySelector('.field-related_mythology');
+            const relatedCharacterField = document.querySelector('.field-related_character');
+
+            function toggleRelatedFields() {
+                if (submissionTypeField && relatedMythologyField && relatedCharacterField) {
+                    if (submissionTypeField.value === 'CORRECTION') {
+                        relatedMythologyField.style.display = 'block';
+                        relatedCharacterField.style.display = 'block';
+                    } else {
+                        relatedMythologyField.style.display = 'none';
+                        relatedCharacterField.style.display = 'none';
+                    }
+                }
+            }
+
+            if (submissionTypeField) {
+                toggleRelatedFields(); // Appel initial pour cacher/afficher au chargement
+                submissionTypeField.addEventListener('change', toggleRelatedFields);
+            }
+        });
+    </script>
+{% endblock %}

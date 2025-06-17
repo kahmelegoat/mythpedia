@@ -1,0 +1,38 @@
+{% extends "mythpedia/base.html" %}
+
+{% block title %}{{ deity.name }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <p class="text-xl text-gray-700 mb-2"><strong>Mythologie :</strong> <a href="{% url 'mythology_detail' deity.mythology.id %}" class="text-blue-600 hover:underline">{{ deity.mythology.name }}</a></p>
+        <p class="text-gray-700 mb-1"><strong>Domaines :</strong> {{ deity.domains|default:"Non spécifié" }}</p>
+        <p class="text-gray-700"><strong>Symboles :</strong> {{ deity.symbols|default:"Non spécifié" }}</p>
+    </div>
+
+    <div class="prose max-w-none mb-8">
+        <h2 class="text-xl font-semibold text-gray-700">Description</h2>
+        <p>{{ deity.description|linebreaksbr }}</p>
+    </div>
+
+    {% if deity.image %}
+        <div class="my-6">
+            <img src="{{ deity.image.url }}" alt="Image de {{ deity.name }}" class="max-w-sm mx-auto rounded-lg shadow-md">
+        </div>
+    {% endif %}
+
+    {% if stories_featuring_deity %}
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Apparaît dans les mythes suivants :</h2>
+        <ul class="list-disc list-inside space-y-1">
+            {% for story in stories_featuring_deity %}
+                <li>
+                    <span class="font-medium">{{ story.title }}</span>
+                    <!-- Vous pourriez ajouter un lien vers la page détail de l'histoire ici si vous en créez une -->
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="mt-8">
+        <a href="{% url 'mythology_detail' deity.mythology.id %}" class="text-blue-600 hover:underline">← Retour à la mythologie {{ deity.mythology.name }}</a>
+    </div>
+{% endblock %}

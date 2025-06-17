@@ -1,0 +1,91 @@
+{% extends "mythpedia/base.html" %}
+{% load static %}
+
+{% block title_tag_content %}{{ story.title }} - {{ mythology.title }} - MythPedia{% endblock %}
+{% block main_page_heading %}{{ story.title }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6 text-sm text-gray-500">
+        {# CORRIGÉ : Utilisation du namespace #}
+        <a href="{% url 'mythpedia:mythology_list' %}" class="text-blue-600 hover:underline">Mythologies</a> »
+        {# CORRIGÉ : Utilisation du namespace et du bon argument pour le slug de la mythologie #}
+        <a href="{% url 'mythpedia:mythology_detail' mythology_slug=mythology.slug %}" class="text-blue-600 hover:underline">{{ mythology.title }}</a> »
+        <span>{{ story.title }}</span>
+    </div>
+
+    {# Bannière ou en-tête pour l'histoire #}
+    <div class="mb-8 p-6 bg-gradient-to-r {{ mythology.color_from|default:'from-gray-400' }} {{ mythology.color_to|default:'to-gray-600' }} text-white rounded-lg shadow-lg">
+        <div class="flex items-center">
+            <i class="fas {{ mythology.icon_class|default:'fa-book-open' }} text-4xl mr-4"></i>
+            <div>
+                <h2 class="text-2xl md:text-3xl font-bold">{{ story.title }}</h2>
+                <p class="text-md opacity-90">Un récit de la mythologie {{ mythology.title }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if story.summary %}
+    <div class="bg-blue-50 p-4 rounded-md shadow mb-8 prose max-w-none">
+        <h3 class="text-xl font-semibold text-blue-700 mb-2">Résumé</h3>
+        <p class="text-gray-700">{{ story.summary|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    {% if story.full_text %}
+    <div class="bg-white p-6 md:p-8 rounded-lg shadow-md mb-10 prose max-w-none">
+        <h3 class="text-xl font-semibold text-gray-800 mb-3">Récit Complet</h3>
+        <div class="text-gray-700 leading-relaxed">
+            {{ story.full_text|linebreaksbr }}
+        </div>
+    </div>
+    {% else %}
+    <p class="text-gray-600 mb-8">Le texte complet de ce récit n'est pas encore disponible.</p>
+    {% endif %}
+
+    {% if key_characters %}
+    <div class="mb-10">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-t pt-4">Personnages Clés dans ce Récit</h3>
+        <ul class="list-none p-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {% for character in key_characters %}
+            <li class="bg-gray-50 p-3 rounded-md shadow-sm hover:shadow-md transition-shadow">
+                {# CORRIGÉ : Utilisation du namespace #}
+                <a href="{% url 'mythpedia:character_detail' mythology_slug=character.mythology.slug character_slug=character.slug %}" class="font-medium text-blue-600 hover:text-blue-700 block">
+                    <i class="fas fa-user-shield mr-2 text-gray-400"></i>{{ character.name }}
+                </a>
+                {% if character.role %}
+                    <p class="text-xs text-gray-500 pl-6">{{ character.role }}</p> {# Petite correction d'indentation visuelle du rôle #}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if story.themes %}
+    <div class="mb-10">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2 border-t pt-4">Thèmes</h3>
+        <p class="text-gray-600 text-sm">
+            {# Note: 'split_by_comma_if_needed' n'est pas un filtre Django standard. #}
+            {# Vous devrez créer un filtre personnalisé ou gérer cela dans la vue si vous voulez splitter. #}
+            {# Pour l'instant, affichons simplement le champ themes tel quel. #}
+            {% for theme_item in story.themes|default:""|stringformat:"s"|split:"," %} {# Tentative simple de split, mais un filtre perso est mieux #}
+                {% if theme_item|strip %}
+                <span class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs mr-1 mb-1">{{ theme_item|strip }}</span>
+                {% endif %}
+            {% empty %}
+                Aucun thème spécifié.
+            {% endfor %}
+            {# Si vous voulez juste afficher la chaîne brute : {{ story.themes }} #}
+        </p>
+    </div>
+    {% endif %}
+
+
+    <div class="mt-10">
+        {# CORRIGÉ : Utilisation du namespace et du bon argument pour le slug de la mythologie #}
+        <a href="{% url 'mythpedia:mythology_detail' mythology_slug=story.mythology.slug %}" class="text-blue-600 hover:underline font-medium">
+            ← Retour à la mythologie {{ story.mythology.title }}
+        </a>
+    </div>
+
+{% endblock %}
