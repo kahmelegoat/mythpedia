@@ -1,0 +1,95 @@
+{% extends "mythpedia/base.html" %}
+{% load static %} {# Assurez-vous que staticfiles est configuré si vous l'utilisez pour des CSS/JS locaux #}
+
+{# Le titre de l'onglet du navigateur utilisera directement mythology.title #}
+{% block title_tag_content %}{{ mythology.title }} - MythPedia{% endblock %}
+
+{# Le H1 principal de la page utilisera directement mythology.title #}
+{% block main_page_heading %}{{ mythology.title }}{% endblock %}
+
+{% block content %}
+    {# Section de la bannière #}
+    <div class="mb-8 p-6 bg-gradient-to-r {{ mythology.color_from }} {{ mythology.color_to }} text-white rounded-lg shadow-lg">
+        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left">
+            <i class="fas {{ mythology.icon_class }} text-5xl sm:text-6xl mb-4 sm:mb-0 sm:mr-6"></i>
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold">{{ mythology.title }}</h2>
+                {% if mythology.card_summary %}
+                    <p class="text-lg mt-1 opacity-90">{{ mythology.card_summary }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# SECTION POUR LES BOUTONS FAVORIS ET MESSAGES (CORRIGÉE) #}
+    <div class="my-6 text-center sm:text-left">
+        {% if user.is_authenticated %}
+            {% if is_favorite %}
+                <form action="{% url 'mythpedia:remove_from_favorites' mythology_slug=mythology.slug %}" method="post" style="display: inline-block;">
+                    {% csrf_token %}
+                    <button type="submit" class="px-5 py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium shadow-md">
+                        <i class="fas fa-heart-broken mr-2"></i> Retirer des Favoris
+                    </button>
+                </form>
+            {% else %}
+                <form action="{% url 'mythpedia:add_to_favorites' mythology_slug=mythology.slug %}" method="post" style="display: inline-block;">
+                    {% csrf_token %}
+                    <button type="submit" class="px-5 py-2.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium shadow-md">
+                        <i class="fas fa-heart mr-2"></i> Ajouter aux Favoris
+                    </button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p class="text-gray-600">
+                <a href="{% url 'login' %}?next={{ request.path }}" class="text-blue-600 hover:underline font-medium">Connectez-vous</a> pour ajouter cette mythologie à vos favoris.
+            </p>
+        {% endif %}
+    </div>
+
+    {# Section pour l'histoire/description principale de la mythologie #}
+    <div class="bg-white p-6 md:p-8 rounded-lg shadow-md mb-10 prose max-w-none">
+        <h3 class="text-2xl font-semibold text-blue-700 mb-4 border-b pb-2">L'Histoire de {{ mythology.title }}</h3>
+        <div class="text-gray-700 leading-relaxed">
+            {{ mythology.description|linebreaksbr }}
+        </div>
+    </div>
+
+    {# Section des Personnages Clés (CORRIGÉE) #}
+    {% if characters %}
+        <div class="mb-10">
+            <h3 class="text-2xl font-semibold text-blue-700 mb-6 text-center border-t pt-6">Personnages Clés de {{ mythology.title }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for character in characters %}
+                    <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow flex flex-col items-center text-center">
+                        {% if character.image_url %}
+                            <img src="{{ character.image_url }}" alt="{{ character.name }}" class="w-32 h-32 object-cover rounded-full mb-4 border-4 border-gray-200">
+                        {% else %}
+                            <div class="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 border-4 border-gray-200">
+                                <i class="fas fa-user text-5xl"></i>
+                            </div>
+                        {% endif %}
+                        <h4 class="text-xl font-semibold text-blue-800 mb-1">
+                            <a href="{% url 'mythpedia:character_detail' mythology_slug=mythology.slug character_slug=character.slug %}" class="hover:underline">
+                                {{ character.name }}
+                            </a>
+                        </h4>
+                        {% if character.role %}
+                            <p class="text-sm text-blue-600 font-medium mb-2">{{ character.role }}</p>
+                        {% endif %}
+                        <p class="text-gray-600 text-sm flex-grow">{{ character.description|truncatewords:20 }}</p>
+                        <a href="{% url 'mythpedia:character_detail' mythology_slug=mythology.slug character_slug=character.slug %}" class="mt-3 text-blue-500 hover:text-blue-700 text-sm font-medium">
+                            En savoir plus →
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p class="text-gray-700 mb-8 text-center">Aucun personnage n'est encore enregistré pour cette mythologie.</p>
+    {% endif %}
+
+    {# Lien de retour (CORRIGÉ) #}
+    <div class="mt-10 text-center">
+        <a href="{% url 'mythpedia:mythology_list' %}" class="text-blue-600 hover:underline font-medium">← Retour à toutes les mythologies</a>
+    </div>
+{% endblock %}

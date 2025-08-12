@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title_tag_content %}{{ page_title|default:"Mythologies du Monde" }}{% endblock %} - MythPedia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* Les styles de .content-area sont bons, assurez-vous qu'ils ne sont pas dupliqués
+           si vous stylisez spécifiquement le conteneur du formulaire de suggestion par exemple. */
+        .content-area { max-width: 1000px; margin: 2rem auto; padding: 1.5rem; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <nav class="bg-blue-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% if user.is_authenticated %}{% url 'mythpedia:mythology_list' %}{% else %}{% url 'login' %}{% endif %}" class="text-2xl font-bold hover:text-blue-100 transition-colors">MythPedia</a>
+            
+            <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                {# Liens principaux (visibles par tous ou conditionnels) #}
+                <a href="{% url 'mythpedia:mythology_list' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Mythologies</a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'mythpedia:user_favorites_list' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Mes Favoris</a>
+                    <a href="{% url 'mythpedia:submit_suggestion' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Suggérer</a>
+                {% else %}
+                    {# Si l'utilisateur n'est pas connecté, le lien "Suggérer" peut toujours être là si souhaité, #}
+                    {# ou uniquement les liens Inscription/Connexion. Pour l'instant, il est au même niveau que les autres #}
+                    <a href="{% url 'mythpedia:submit_suggestion' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Suggérer</a>
+                {% endif %}
+
+                {# Séparateur visuel optionnel avant les liens d'utilisateur/authentification #}
+                {% comment %} <span class="hidden md:inline-block border-l border-blue-500 h-6"></span> {% endcomment %}
+
+                {# Section pour l'utilisateur / authentification - poussée à droite par le flex du parent #}
+                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin:index' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Admin</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Déconnexion</a>
+                        <span class="text-sm font-medium pl-2 border-l border-blue-500 hidden sm:inline">Bonjour, {{ user.username }}!</span>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Inscription</a>
+                        <a href="{% url 'login' %}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+   
+    <div class="content-area">
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="p-4 text-sm rounded-md 
+                    {% if message.tags == 'success' %}bg-green-100 border border-green-200 text-green-700
+                    {% elif message.tags == 'error' %}bg-red-100 border border-red-200 text-red-700
+                    {% elif message.tags == 'info' %}bg-blue-100 border border-blue-200 text-blue-700
+                    {% elif message.tags == 'warning' %}bg-yellow-100 border border-yellow-200 text-yellow-700
+                    {% else %}bg-gray-100 border border-gray-200 text-gray-700 {# Cas par défaut #}
+                    {% endif %}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+
+        <h1 class="text-4xl font-bold text-blue-700 mb-8 text-center">{% block main_page_heading %}{{ page_title|default:"Bienvenue" }}{% endblock %}</h1>
+        
+        {% block content %}
+        <!-- Le contenu spécifique de chaque page ira ici -->
+        {% endblock %}
+    </div>
+
+    <footer class="text-center p-6 mt-10 text-gray-500 text-sm border-t border-gray-200">
+        <p>© {% now "Y" %} MythPedia. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{% extends "mythpedia/base.html" %}
+
+{% block title %}Mes Favoris{% endblock %}
+{% block main_page_heading %}Mes Favoris{% endblock %}
+
+{% block content %}
+    {# Section Mythologies Favorites #}
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-blue-700 mb-4 border-b pb-2">Mythologies Favorites</h2>
+        {% if favorite_mythologies %}
+            <ul class="space-y-3">
+                {% for mythology in favorite_mythologies %}
+                    <li class="p-3 border rounded-md shadow-sm hover:bg-gray-50 flex justify-between items-center">
+                        <div>
+                            <a href="{% url 'mythology_detail' mythology.slug %}" class="text-lg font-semibold text-blue-600 hover:text-blue-700">
+                                {{ mythology.title }}
+                            </a>
+                            {% if mythology.card_summary %}
+                                <p class="text-sm text-gray-600 mt-1">{{ mythology.card_summary }}</p>
+                            {% endif %}
+                        </div>
+                        <form action="{% url 'remove_from_favorites' mythology.slug %}" method="post" class="ml-4">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                                Retirer
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-700">Vous n'avez pas encore de mythologies favorites.</p>
+            <p><a href="{% url 'mythpedia:mythology_list' %}" class="text-blue-600 hover:underline">Découvrir les mythologies</a></p>
+        {% endif %}
+    </section>
+
+    {# Section Personnages Favoris #}
+    <section>
+        <h2 class="text-2xl font-semibold text-blue-700 mb-4 border-b pb-2 mt-8">Personnages Favoris</h2>
+        {% if favorite_characters %}
+            <ul class="space-y-3">
+                {% for character in favorite_characters %}
+                    <li class="p-3 border rounded-md shadow-sm hover:bg-gray-50 flex justify-between items-center">
+                        <div>
+                            <a href="{% url 'character_detail' mythology_slug=character.mythology.slug character_slug=character.slug %}" class="text-lg font-semibold text-blue-600 hover:text-blue-700">
+                                {{ character.name }}
+                            </a>
+                            <p class="text-sm text-gray-500"> ({{ character.mythology.title }})</p>
+                            {% if character.role %}
+                                <p class="text-sm text-gray-600 mt-1">{{ character.role }}</p>
+                            {% endif %}
+                        </div>
+                        <form action="{% url 'remove_character_from_favorites' mythology_slug=character.mythology.slug character_slug=character.slug %}" method="post" class="ml-4">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                                Retirer
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-700">Vous n'avez pas encore de personnages favoris.</p>
+            {# Peut-être un lien pour explorer les personnages ? #}
+        {% endif %}
+    </section>
+{% endblock %}
